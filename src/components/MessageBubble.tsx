@@ -70,7 +70,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         )}
 
         {message.meta && (
-          <div className="mt-2 pt-2 border-t border-gray-200/40 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-gray-400">
+          <div className="mt-2 pt-2 border-t border-gray-200/40 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-black">
             <span>{message.meta.model}</span>
             {message.meta.totalMs ? (
               <span>{(message.meta.totalMs / 1000).toFixed(1)}s gesamt</span>

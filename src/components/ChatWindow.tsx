@@ -74,15 +74,18 @@ export function ChatWindow() {
         { role: "assistant", content: "", sources: [] },
       ]);
 
+      let buffer = "";
       while (reader) {
         const { done, value } = await reader.read();
         if (done) break;
 
-        const chunk = decoder.decode(value);
-        const lines = chunk.split("\n");
+        buffer += decoder.decode(value, { stream: true });
+        const parts = buffer.split("\n\n");
+        buffer = parts.pop() || "";
 
-        for (const line of lines) {
-          if (line.startsWith("data: ")) {
+        for (const part of parts) {
+          for (const line of part.split("\n")) {
+            if (!line.startsWith("data: ")) continue;
             const data = line.slice(6);
             if (data === "[DONE]") continue;
 
@@ -97,22 +100,22 @@ export function ChatWindow() {
                 if (parsed.sources?.length) sources = parsed.sources;
                 if (parsed.meta) meta = parsed.meta;
               }
-
-              setMessages((prev) => {
-                const updated = [...prev];
-                updated[updated.length - 1] = {
-                  role: "assistant",
-                  content: assistantContent,
-                  sources,
-                  meta,
-                };
-                return updated;
-              });
             } catch {
               // skip malformed JSON
             }
           }
         }
+
+        setMessages((prev) => {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            role: "assistant",
+            content: assistantContent,
+            sources,
+            meta,
+          };
+          return updated;
+        });
       }
     } catch {
       setMessages((prev) => [

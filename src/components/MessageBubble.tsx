@@ -48,7 +48,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
               [&_em]:text-gray-800
               [&_a]:text-blue-700 [&_a]:underline [&_a]:underline-offset-2
               [&_code]:bg-gray-200 [&_code]:text-black [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs
-              [&_img]:rounded-lg [&_img]:my-2 [&_img]:max-w-full
+              [&_img]:rounded-lg [&_img]:my-2 [&_img]:max-w-full [&_img]:block [&_img]:h-auto
               [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:my-1
               [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:my-1
               [&_li]:text-black [&_li]:my-0.5

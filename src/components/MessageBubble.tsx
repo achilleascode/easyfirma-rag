@@ -1,4 +1,10 @@
+import { marked } from "marked";
 import { SourceCard } from "./SourceCard";
+
+marked.setOptions({
+  breaks: true,
+  gfm: true,
+});
 
 interface Source {
   title: string;
@@ -44,18 +50,22 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         ) : (
           <div
             className="prose prose-sm max-w-none text-black leading-relaxed
+              [&_h1]:text-base [&_h1]:font-bold [&_h1]:text-black [&_h1]:mt-3 [&_h1]:mb-1
+              [&_h2]:text-sm [&_h2]:font-bold [&_h2]:text-black [&_h2]:mt-3 [&_h2]:mb-1
+              [&_h3]:text-sm [&_h3]:font-semibold [&_h3]:text-black [&_h3]:mt-2 [&_h3]:mb-1
               [&_strong]:text-black [&_strong]:font-semibold
               [&_em]:text-gray-800
               [&_a]:text-blue-700 [&_a]:underline [&_a]:underline-offset-2
               [&_code]:bg-gray-200 [&_code]:text-black [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs
+              [&_pre]:bg-gray-200 [&_pre]:p-3 [&_pre]:rounded-lg [&_pre]:my-2 [&_pre]:overflow-x-auto
               [&_img]:rounded-lg [&_img]:my-2 [&_img]:max-w-full [&_img]:block [&_img]:h-auto
               [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:my-1
               [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:my-1
               [&_li]:text-black [&_li]:my-0.5
               [&_p]:text-black [&_p]:my-1
-              [&_br]:leading-relaxed"
+              [&_blockquote]:border-l-2 [&_blockquote]:border-gray-300 [&_blockquote]:pl-3 [&_blockquote]:text-gray-700"
             dangerouslySetInnerHTML={{
-              __html: formatMarkdown(message.content),
+              __html: marked.parse(message.content) as string,
             }}
           />
         )}
@@ -91,42 +101,3 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   );
 }
 
-function formatMarkdown(text: string): string {
-  let html = text;
-
-  // Convert markdown lists (unordered)
-  html = html.replace(/^[\t ]*[-*]\s+(.+)$/gm, "<li>$1</li>");
-  // Wrap consecutive <li> in <ul>
-  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, "<ul>$1</ul>");
-
-  // Convert markdown lists (ordered)
-  html = html.replace(/^[\t ]*\d+\.\s+(.+)$/gm, "<li>$1</li>");
-
-  // Bold
-  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-  // Italic
-  html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
-  // Inline code
-  html = html.replace(
-    /`(.*?)`/g,
-    '<code>$1</code>'
-  );
-  // Images (before links)
-  html = html.replace(
-    /!\[(.*?)\]\((.*?)\)/g,
-    '<img src="$2" alt="$1" loading="lazy" />'
-  );
-  // Links
-  html = html.replace(
-    /\[(.*?)\]\((.*?)\)/g,
-    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
-  );
-  // Line breaks (but not inside list blocks)
-  html = html.replace(/\n/g, "<br />");
-  // Clean up extra <br /> around lists
-  html = html.replace(/<br \/>\s*<ul>/g, "<ul>");
-  html = html.replace(/<\/ul>\s*<br \/>/g, "</ul>");
-  html = html.replace(/<br \/>\s*<li>/g, "<li>");
-
-  return html;
-}

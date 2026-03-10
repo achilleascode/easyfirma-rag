@@ -23,19 +23,35 @@ export function MessageBubble({ message }: MessageBubbleProps) {
         className={`max-w-[85%] rounded-2xl px-4 py-3 ${
           isUser
             ? "bg-blue-600 text-white"
-            : "bg-gray-100 text-gray-800"
+            : "bg-gray-100 text-black"
         }`}
       >
-        <div
-          className="prose prose-sm max-w-none [&_a]:text-blue-600 [&_a]:underline [&_img]:rounded-lg [&_img]:my-2"
-          dangerouslySetInnerHTML={{
-            __html: formatMarkdown(message.content),
-          }}
-        />
+        {isUser ? (
+          <div className="text-sm leading-relaxed whitespace-pre-wrap">
+            {message.content}
+          </div>
+        ) : (
+          <div
+            className="prose prose-sm max-w-none text-black leading-relaxed
+              [&_strong]:text-black [&_strong]:font-semibold
+              [&_em]:text-gray-800
+              [&_a]:text-blue-700 [&_a]:underline [&_a]:underline-offset-2
+              [&_code]:bg-gray-200 [&_code]:text-black [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs
+              [&_img]:rounded-lg [&_img]:my-2 [&_img]:max-w-full
+              [&_ul]:list-disc [&_ul]:pl-4 [&_ul]:my-1
+              [&_ol]:list-decimal [&_ol]:pl-4 [&_ol]:my-1
+              [&_li]:text-black [&_li]:my-0.5
+              [&_p]:text-black [&_p]:my-1
+              [&_br]:leading-relaxed"
+            dangerouslySetInnerHTML={{
+              __html: formatMarkdown(message.content),
+            }}
+          />
+        )}
 
         {message.sources && message.sources.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-200 space-y-1.5">
-            <p className="text-xs font-medium text-gray-500">Quellen:</p>
+          <div className="mt-3 pt-3 border-t border-gray-200/60 space-y-1.5">
+            <p className="text-xs font-medium text-gray-600">Quellen:</p>
             {message.sources.map((source, i) => (
               <SourceCard key={i} source={source} />
             ))}
@@ -47,11 +63,41 @@ export function MessageBubble({ message }: MessageBubbleProps) {
 }
 
 function formatMarkdown(text: string): string {
-  return text
-    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.*?)\*/g, "<em>$1</em>")
-    .replace(/`(.*?)`/g, '<code class="bg-gray-200 px-1 rounded text-sm">$1</code>')
-    .replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" />')
-    .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
-    .replace(/\n/g, "<br />");
+  let html = text;
+
+  // Convert markdown lists (unordered)
+  html = html.replace(/^[\t ]*[-*]\s+(.+)$/gm, "<li>$1</li>");
+  // Wrap consecutive <li> in <ul>
+  html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, "<ul>$1</ul>");
+
+  // Convert markdown lists (ordered)
+  html = html.replace(/^[\t ]*\d+\.\s+(.+)$/gm, "<li>$1</li>");
+
+  // Bold
+  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  // Italic
+  html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
+  // Inline code
+  html = html.replace(
+    /`(.*?)`/g,
+    '<code>$1</code>'
+  );
+  // Images (before links)
+  html = html.replace(
+    /!\[(.*?)\]\((.*?)\)/g,
+    '<img src="$2" alt="$1" loading="lazy" />'
+  );
+  // Links
+  html = html.replace(
+    /\[(.*?)\]\((.*?)\)/g,
+    '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+  );
+  // Line breaks (but not inside list blocks)
+  html = html.replace(/\n/g, "<br />");
+  // Clean up extra <br /> around lists
+  html = html.replace(/<br \/>\s*<ul>/g, "<ul>");
+  html = html.replace(/<\/ul>\s*<br \/>/g, "</ul>");
+  html = html.replace(/<br \/>\s*<li>/g, "<li>");
+
+  return html;
 }

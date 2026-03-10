@@ -16,6 +16,13 @@ interface Message {
   sources?: Source[];
 }
 
+const quickStartQuestions = [
+  "Wie erstelle ich eine Rechnung mit Skonto?",
+  "EasyFirma auf neuen PC umziehen",
+  "Kleinunternehmerregelung einstellen",
+  "E-Mail Versand funktioniert nicht",
+];
+
 export function ChatWindow() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -109,25 +116,19 @@ export function ChatWindow() {
     <div className="flex flex-col h-[calc(100vh-4rem)] max-w-3xl mx-auto">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 && (
-          <div className="text-center text-gray-400 mt-20">
-            <div className="text-4xl mb-4">💬</div>
-            <h2 className="text-xl font-semibold text-gray-600 mb-2">
+          <div className="text-center mt-20 animate-fade-in">
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
               EasyFirma Support
             </h2>
-            <p className="text-sm">
+            <p className="text-sm text-gray-500">
               Stellen Sie Ihre Frage zu EasyFirma — ich helfe Ihnen gerne!
             </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
-              {[
-                "Wie erstelle ich eine Rechnung mit Skonto?",
-                "EasyFirma auf neuen PC umziehen",
-                "Kleinunternehmerregelung einstellen",
-                "E-Mail Versand funktioniert nicht",
-              ].map((q) => (
+            <div className="mt-8 flex flex-wrap justify-center gap-2">
+              {quickStartQuestions.map((q) => (
                 <button
                   key={q}
                   onClick={() => handleSend(q)}
-                  className="text-xs px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-full text-gray-600 transition-colors"
+                  className="text-xs px-4 py-2 bg-gray-50 hover:bg-gray-100 border border-gray-200 hover:border-gray-300 rounded-full text-gray-800 transition-all duration-200"
                 >
                   {q}
                 </button>
@@ -137,14 +138,20 @@ export function ChatWindow() {
         )}
 
         {messages.map((msg, i) => (
-          <MessageBubble key={i} message={msg} />
+          <div
+            key={i}
+            className="animate-fade-in"
+            style={{ animationDelay: `${i * 50}ms` }}
+          >
+            <MessageBubble message={msg} />
+          </div>
         ))}
 
         {isLoading && messages[messages.length - 1]?.role !== "assistant" && (
-          <div className="flex gap-1 px-4 py-2">
-            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.1s]" />
-            <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+          <div className="flex gap-1.5 px-4 py-3">
+            <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" />
+            <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce [animation-delay:0.15s]" />
+            <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce [animation-delay:0.3s]" />
           </div>
         )}
 

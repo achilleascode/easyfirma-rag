@@ -30,7 +30,7 @@ export async function retrieveContext(
   const { data: chunks, error } = await supabase.rpc("match_chunks", {
     query_embedding: queryEmbedding,
     match_threshold: 0.5,
-    match_count: 6,
+    match_count: 4,
   });
 
   if (error) {
@@ -51,7 +51,7 @@ export async function retrieveContext(
     }
   }
 
-  const uniqueChunks = Array.from(seenDocs.values()).slice(0, 5);
+  const uniqueChunks = Array.from(seenDocs.values()).slice(0, 3);
 
   // 4. Assemble context
   const contextParts = uniqueChunks.map(

@@ -15,20 +15,20 @@ export function SourceCard({ source }: SourceCardProps) {
         href={source.url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 text-xs px-2 py-1.5 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors"
+        className="flex items-center gap-2 text-xs px-3 py-2 bg-white/80 rounded-lg border border-gray-200 hover:border-blue-400 hover:bg-white transition-all duration-150 group"
       >
-        <span className="text-blue-600">📄</span>
-        <span className="flex-1 truncate text-gray-700">{source.title}</span>
-        <span className="text-gray-400 shrink-0">{percent}%</span>
+        <span className="flex-1 truncate text-gray-800 group-hover:text-blue-700 transition-colors">
+          {source.title}
+        </span>
+        <span className="text-gray-400 shrink-0 text-[11px]">{percent}%</span>
       </a>
     );
   }
 
   return (
-    <div className="flex items-center gap-2 text-xs px-2 py-1.5 bg-white rounded-lg border border-gray-200">
-      <span className="text-blue-600">📄</span>
-      <span className="flex-1 truncate text-gray-700">{source.title}</span>
-      <span className="text-gray-400 shrink-0">{percent}%</span>
+    <div className="flex items-center gap-2 text-xs px-3 py-2 bg-white/80 rounded-lg border border-gray-200">
+      <span className="flex-1 truncate text-gray-800">{source.title}</span>
+      <span className="text-gray-400 shrink-0 text-[11px]">{percent}%</span>
     </div>
   );
 }

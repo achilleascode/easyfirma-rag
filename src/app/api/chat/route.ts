@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
 
       try {
         const response = getAnthropic().messages.stream({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-haiku-4-5-20251001",
           max_tokens: 1024,
           system: systemPrompt,
           messages: conversationHistory,
@@ -95,6 +95,7 @@ export async function POST(req: NextRequest) {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache",
       Connection: "keep-alive",
+      "X-Model": "claude-haiku-4-5",
     },
   });
 }

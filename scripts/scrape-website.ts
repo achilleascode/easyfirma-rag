@@ -68,26 +68,94 @@ async function scrapePage(
     const html = await res.text();
     const $ = cheerio.load(html);
 
-    // Extract title from h1 or meta
-    const title =
-      $("h1.entry-title").text().trim() ||
-      $("h1").first().text().trim() ||
-      $("title").text().trim();
+    // Strategy 1: Extract from JSON-LD FAQPage schema (most reliable)
+    let title = "";
+    let content = "";
 
-    // Extract main content - try common WordPress selectors
-    const contentEl =
-      $(".entry-content").first().length > 0
-        ? $(".entry-content").first()
-        : $(".ufaq-post-content").first().length > 0
-          ? $(".ufaq-post-content").first()
-          : $("article .content").first().length > 0
-            ? $("article .content").first()
-            : $("article").first();
+    $('script[type="application/ld+json"]').each((_, el) => {
+      try {
+        const json = JSON.parse($(el).html() || "");
+        // Handle @graph structure (Yoast SEO)
+        const entities = json["@graph"] || [json];
+        for (const entity of entities) {
+          if (entity["@type"] === "FAQPage" && entity.mainEntity) {
+            const faqs = Array.isArray(entity.mainEntity)
+              ? entity.mainEntity
+              : [entity.mainEntity];
+            for (const faq of faqs) {
+              if (faq["@type"] === "Question") {
+                title = faq.name || "";
+                content = faq.acceptedAnswer?.text || "";
+              }
+            }
+          }
+        }
+      } catch {
+        // skip malformed JSON-LD
+      }
+    });
 
-    if (!contentEl.length) return null;
+    // Strategy 2: Fallback to HTML article extraction
+    if (!content) {
+      title =
+        $("h1").first().text().trim() ||
+        $("h2").first().text().trim() ||
+        $("title").text().trim();
 
-    const content = htmlToMarkdown($, contentEl);
-    if (content.length < 20) return null;
+      // Try multiple selectors for the content
+      const selectors = [
+        "article",
+        ".wp-site-blocks article",
+        ".entry-content",
+        ".ufaq-post-content",
+        "main",
+      ];
+
+      for (const selector of selectors) {
+        const el = $(selector).first();
+        if (el.length) {
+          const extracted = htmlToMarkdown($, el);
+          if (extracted.length > 50) {
+            content = extracted;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!title || content.length < 20) return null;
+
+    // Clean up HTML entities in JSON-LD content
+    content = content
+      .replace(/<\/?p>/gi, "\n")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<h2[^>]*>(.*?)<\/h2>/gi, "\n## $1\n")
+      .replace(/<h3[^>]*>(.*?)<\/h3>/gi, "\n### $1\n")
+      .replace(/<strong>(.*?)<\/strong>/gi, "**$1**")
+      .replace(/<b>(.*?)<\/b>/gi, "**$1**")
+      .replace(/<em>(.*?)<\/em>/gi, "*$1*")
+      .replace(/<a\s+href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "[$2]($1)")
+      .replace(/<img\s+[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*\/?>/gi, "![$2]($1)")
+      .replace(/<img\s+[^>]*src="([^"]*)"[^>]*\/?>/gi, "![]($1)")
+      .replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .replace(/&auml;/g, "ä")
+      .replace(/&ouml;/g, "ö")
+      .replace(/&uuml;/g, "ü")
+      .replace(/&szlig;/g, "ß")
+      .replace(/&Auml;/g, "Ä")
+      .replace(/&Ouml;/g, "Ö")
+      .replace(/&Uuml;/g, "Ü")
+      .replace(/&#8211;/g, "–")
+      .replace(/&#8220;/g, "\"")
+      .replace(/&#8221;/g, "\"")
+      .replace(/&#8222;/g, "\"")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
 
     return { title, content: `# ${title}\n\n${content}` };
   } catch (err) {

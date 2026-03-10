@@ -46,7 +46,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
           onKeyDown={handleKeyDown}
           placeholder="Ihre Frage zu EasyFirma..."
           rows={1}
-          className="flex-1 resize-none rounded-xl border border-gray-300 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className="flex-1 resize-none rounded-xl border border-gray-300 bg-white px-4 py-2.5 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
           disabled={isLoading}
         />
         <button
@@ -57,7 +57,7 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
           Senden
         </button>
       </div>
-      <p className="text-xs text-gray-400 mt-2 text-center">
+      <p className="text-xs text-gray-500 mt-2 text-center">
         EasyFirma Support-Chatbot — Antworten basieren auf der Wissensdatenbank
       </p>
     </form>

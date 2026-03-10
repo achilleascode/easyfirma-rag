@@ -10,10 +10,21 @@ interface Source {
   similarity: number;
 }
 
+interface MessageMeta {
+  model: string;
+  ragMs: number;
+  firstTokenMs: number;
+  totalMs?: number;
+  tokenCount?: number;
+  topSimilarity: number;
+  chunksFound: number;
+}
+
 interface Message {
   role: "user" | "assistant";
   content: string;
   sources?: Source[];
+  meta?: MessageMeta;
 }
 
 const quickStartQuestions = [
@@ -56,6 +67,7 @@ export function ChatWindow() {
       const decoder = new TextDecoder();
       let assistantContent = "";
       let sources: Source[] = [];
+      let meta: MessageMeta | undefined;
 
       setMessages((prev) => [
         ...prev,
@@ -76,11 +88,14 @@ export function ChatWindow() {
 
             try {
               const parsed = JSON.parse(data);
-              if (parsed.error) {
+              if (parsed.done && parsed.stats) {
+                meta = parsed.stats;
+              } else if (parsed.error) {
                 assistantContent += parsed.error;
               } else {
                 assistantContent += parsed.text || "";
                 if (parsed.sources?.length) sources = parsed.sources;
+                if (parsed.meta) meta = parsed.meta;
               }
 
               setMessages((prev) => {
@@ -89,6 +104,7 @@ export function ChatWindow() {
                   role: "assistant",
                   content: assistantContent,
                   sources,
+                  meta,
                 };
                 return updated;
               });
@@ -104,7 +120,7 @@ export function ChatWindow() {
         {
           role: "assistant",
           content:
-            "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut oder kontaktieren Sie office@easyfirma.net.",
+            "Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
         },
       ]);
     } finally {

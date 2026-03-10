@@ -6,11 +6,22 @@ interface Source {
   similarity: number;
 }
 
+interface MessageMeta {
+  model: string;
+  ragMs: number;
+  firstTokenMs: number;
+  totalMs?: number;
+  tokenCount?: number;
+  topSimilarity: number;
+  chunksFound: number;
+}
+
 interface MessageBubbleProps {
   message: {
     role: "user" | "assistant";
     content: string;
     sources?: Source[];
+    meta?: MessageMeta;
   };
 }
 
@@ -55,6 +66,24 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             {message.sources.map((source, i) => (
               <SourceCard key={i} source={source} />
             ))}
+          </div>
+        )}
+
+        {message.meta && (
+          <div className="mt-2 pt-2 border-t border-gray-200/40 flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-gray-400">
+            <span>{message.meta.model}</span>
+            {message.meta.totalMs ? (
+              <span>{(message.meta.totalMs / 1000).toFixed(1)}s gesamt</span>
+            ) : message.meta.firstTokenMs ? (
+              <span>{message.meta.firstTokenMs}ms TTFT</span>
+            ) : null}
+            {message.meta.ragMs > 0 && <span>{message.meta.ragMs}ms RAG</span>}
+            {message.meta.chunksFound > 0 && <span>{message.meta.chunksFound} Chunks</span>}
+            {message.meta.topSimilarity > 0 && (
+              <span>{typeof message.meta.topSimilarity === "number" && message.meta.topSimilarity < 1
+                ? `${Math.round(message.meta.topSimilarity * 100)}%`
+                : `${message.meta.topSimilarity}%`} Relevanz</span>
+            )}
           </div>
         )}
       </div>

@@ -4,7 +4,9 @@ import { retrieveContext } from "@/lib/rag";
 import { buildSystemPrompt } from "@/lib/prompt";
 import { createServiceClient } from "@/lib/supabase";
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+function getAnthropic() {
+  return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+}
 
 export async function POST(req: NextRequest) {
   const { messages, sessionId } = await req.json();
@@ -34,7 +36,7 @@ export async function POST(req: NextRequest) {
       let fullResponse = "";
 
       try {
-        const response = anthropic.messages.stream({
+        const response = getAnthropic().messages.stream({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1024,
           system: systemPrompt,
